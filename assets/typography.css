@@ -1,0 +1,13 @@
+
+body {
+    font-family: "Open Sans";
+}
+
+h1, h2, h3 {
+    font-family: "Roboto";
+    text-align: center;
+}
+
+h2 {
+    font-variant: small-caps;
+}

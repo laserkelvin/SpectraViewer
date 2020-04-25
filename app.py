@@ -12,6 +12,7 @@ import analysis, utils
 
 external_stylesheets = [
     "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css",
+    "https://fonts.googleapis.com/css2?family=Open+Sans&family=Roboto&display=swap"
 ]
 
 
@@ -141,4 +142,4 @@ app.layout = html.Div(
 
 if __name__ == "__main__":
     utils.clean_serialized()
-    app.run_server(debug=True)
+    app.run_server(debug=False)
