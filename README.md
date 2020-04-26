@@ -3,6 +3,7 @@
 ![repobadge](https://img.shields.io/github/license/laserkelvin/spectraviewer)
 Dash app for viewing legacy millimeter-wave spectroscopy data.
 
+![](demo.gif)
 
 ## Running locally
 
