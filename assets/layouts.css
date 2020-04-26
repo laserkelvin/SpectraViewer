@@ -21,3 +21,11 @@
 .dash-table-container {
     max-width: 100%;
 }
+
+body {
+    margin: 2px
+}
+
+p {
+    margin: 3px
+}

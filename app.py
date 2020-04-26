@@ -114,6 +114,19 @@ def pick_a_peak(click_data, rows):
     else:
         raise dash.exceptions.PreventUpdate
     
+"""
+DataTable saving
+"""
+@app.callback(
+    Output("hidden", "children"),
+    [Input("save-button", "n_clicks")],
+    [State("output-table", "data")]
+)
+def export_table(n_clicks=0, rows=None):
+    if n_clicks:
+        utils.save_datatable(rows)
+    else:
+        raise dash.exceptions.PreventUpdate
 
 
 # APP LAYOUT
@@ -128,7 +141,10 @@ app.layout = html.Div(
                 html.P("SpectraViewer is a Dash application for viewing legacy millimeter-wave data."),
                 html.P("Simply upload your data with the browser below, and it should display the frequency/time domain spectra."),
                 html.P("The only tweak for the filtering conditions is the cut-off region in the time domain spectrum."),
-                html.P("You can adjust the region to use for the cut-off by simply zooming in the time-domain panel.")
+                html.P("You can adjust the region to use for the cut-off by simply zooming in the time-domain panel."),
+                html.P("On the Processed Signal panel, you can click anywhere to record the corresponding frequency; please use this to pick peaks."),
+                html.P("Once you're done with analysis, there is Save table button at the bottom of the page to dump the table to a CSV file."),
+                html.P("Persistent data is saved in the `data/` folder.")
             ]
         ),
         dcc.Upload(
@@ -169,18 +185,20 @@ app.layout = html.Div(
         dash_table.DataTable(
             id="output-table",
             columns=(
-                [{"name": "Scan Number", "id": "scan-num", "deletable": True, "renameable": True}, 
-                 {"name": "Frequency", "id": "peak-freq", "deletable": True, "renameable": True}, 
-                 {"name": "Intensity", "id": "peak-int", "deletable": True, "renameable": True}]
+                [{"name": "Scan Number", "id": "scan-num", "deletable": True, "renamable": True}, 
+                 {"name": "Frequency", "id": "peak-freq", "deletable": True, "renamable": True}, 
+                 {"name": "Intensity", "id": "peak-int", "deletable": True, "renamable": True}]
             ),
-            data=[{"scan-num": "", "peak-freq": "", "peak-int": ""}],
+            data=[{"scan-num": " ", "peak-freq": " ", "peak-int": " "}],
             editable=True,
             row_deletable=True
         ),
+        html.Button("Save table", id="save-button"),
+        html.Div(id="hidden", children=[])
     ],
     id="top-container"
 )
 
 if __name__ == "__main__":
     utils.clean_serialized()
-    app.run_server(debug=False)
+    app.run_server(debug=True)

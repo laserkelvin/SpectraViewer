@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import xarray as xr
+import pandas as pd
 from plotly import graph_objs as go
 
 import analysis
@@ -166,14 +167,13 @@ def generate_plot(data=None):
         "xaxis_title": "Index"
     }
     for key in ["OFF FFT", "ON FFT"]:
-        if data[key].sum() > 0.:
-            time_plot.add_trace(
-                go.Scatter(
-                    x=data["Index"],
-                    y=np.real(data[key]),
-                    name=key
-                )
+        time_plot.add_trace(
+            go.Scatter(
+                x=data["Index"],
+                y=data[key],
+                name=key
             )
+        )
     return freq_plot, time_plot
 
 
@@ -198,13 +198,15 @@ def process_signal(json_data: dict, data=None):
     """
     if data is None:
         data = read_serialized_data()
+    field_off = data["Field OFF"]
     signal = data["OFF - ON"]
     # Get the time domain cut off
     low_cut = int(json_data.get("xaxis.range[0]", 0))
     high_cut = int(json_data.get("xaxis.range[1]", 1e4))
     signal = analysis.filter_signal(signal, low_cut, high_cut)
+    field_off = analysis.filter_signal(field_off, low_cut, high_cut)
     # Save the data to disk
-    data["OFF - ON"] = signal
+    # data["OFF - ON"] = signal
     # data.to_netcdf("data/processed-dataset.nc", engine="h5netcdf", invalid_netcdf=True)
     # Now make a plot of it
     processed_plot = go.Figure()
@@ -219,4 +221,17 @@ def process_signal(json_data: dict, data=None):
             name="Processed",
         )
     )
+    processed_plot.add_trace(
+        go.Scatter(
+            x=data["Frequency"],
+            y=field_off,
+            name="Field OFF"
+        )
+    )
     return processed_plot
+
+
+def save_datatable(row_data):
+    dataset = pd.DataFrame(row_data)
+    dataset.to_csv("data/table_export.csv")
+    
