@@ -1,7 +1,11 @@
 # SpectraViewer
 
 ![repobadge](https://img.shields.io/github/license/laserkelvin/spectraviewer)
-Dash app for viewing legacy millimeter-wave spectroscopy data.
+
+Dash app for viewing legacy millimeter-wave spectroscopy data. The problem with the
+old method was that it required propertiary (LabView) software, and is also incredibly
+backwards incompatible. The repository now has all the necessary ingredients to run
+this kind of analysis for at least a while!
 
 ![](demo.gif)
 
