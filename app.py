@@ -2,6 +2,7 @@
 import json
 import flask
 import dash
+import dash_table
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
@@ -79,13 +80,41 @@ view as the cutoffs.
 @app.callback(
     Output("processed-plot", "figure"),
     [Input("time-plot", "relayoutData")]
-    )
+)
 def update_signal_filter(relayout_data: dict):
     try:
         freq_plot = utils.process_signal(relayout_data)
         return freq_plot
     except:
         raise dash.exceptions.PreventUpdate
+    
+"""
+Peak picking callback
+"""
+@app.callback(
+    Output("output-table", "data"),
+    [Input("processed-plot", "clickData")],
+    [State("output-table", "data")]
+)
+def pick_a_peak(click_data, rows):
+    if click_data is not None:
+        extract_info = click_data["points"][0]
+        frequency = extract_info.get("x")
+        intensity = extract_info.get("y")
+        data = utils.read_serialized_data()
+        name = data.attrs.get("ID")
+        # Add the data to the Datatable
+        rows.append(
+            {"scan-num": name,
+             "peak-freq": f"{frequency:.4f}",
+             "peak-int": f"{intensity:.4f}"
+             }
+        )
+        return rows
+    else:
+        raise dash.exceptions.PreventUpdate
+    
+
 
 # APP LAYOUT
 # ==========
@@ -136,8 +165,20 @@ app.layout = html.Div(
                 )
             ],
             id="plot-div",
-        )
-    ]
+        ),
+        dash_table.DataTable(
+            id="output-table",
+            columns=(
+                [{"name": "Scan Number", "id": "scan-num", "deletable": True, "renameable": True}, 
+                 {"name": "Frequency", "id": "peak-freq", "deletable": True, "renameable": True}, 
+                 {"name": "Intensity", "id": "peak-int", "deletable": True, "renameable": True}]
+            ),
+            data=[{"scan-num": "", "peak-freq": "", "peak-int": ""}],
+            editable=True,
+            row_deletable=True
+        ),
+    ],
+    id="top-container"
 )
 
 if __name__ == "__main__":

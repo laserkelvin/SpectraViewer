@@ -100,13 +100,13 @@ def parse_data(contents):
         attrs=settings
     )
     # serialize pandas dataframe for use
-    dataset.to_netcdf("uploaded-dataset.nc", engine="h5netcdf", invalid_netcdf=True)
+    dataset.to_netcdf("data/uploaded-dataset.nc", engine="h5netcdf", invalid_netcdf=True)
     
     return dataset
 
 
 def read_serialized_data():
-    temp_path = Path("uploaded-dataset.nc")
+    temp_path = Path("data/uploaded-dataset.nc")
     if temp_path.exists():
         return xr.open_dataset(temp_path)
     else:
@@ -114,9 +114,8 @@ def read_serialized_data():
     
 
 def clean_serialized():
-    temp_path = Path("uploaded-dataset.nc")
-    if temp_path.exists():
-        os.remove(temp_path)
+    for file in Path("data").rglob("*.nc"):
+        os.remove(file)
 
 
 def generate_plot(data=None):
@@ -132,9 +131,10 @@ def generate_plot(data=None):
     """
     if data is None:
         data = read_serialized_data()
+    name = data.attrs.get("ID")
     freq_plot = go.Figure()
     freq_plot.layout = {
-        "title": "Frequency Domain",
+        "title": f"Frequency Domain: {name}",
         "xaxis_title": "Frequency (MHz)"
     }
     freq_plot.add_trace(
@@ -178,6 +178,24 @@ def generate_plot(data=None):
 
 
 def process_signal(json_data: dict, data=None):
+    """
+    Function called by the application callback to perform
+    the FFT filtering. The input of this function comes from
+    the JSON data of the Plotly `Figure`, corresponding to the
+    x-axis range spanned in the time domain plot.
+
+    Parameters
+    ----------
+    json_data : dict
+        [description]
+    data : [type], optional
+        [description], by default None
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     if data is None:
         data = read_serialized_data()
     signal = data["OFF - ON"]
@@ -187,7 +205,7 @@ def process_signal(json_data: dict, data=None):
     signal = analysis.filter_signal(signal, low_cut, high_cut)
     # Save the data to disk
     data["OFF - ON"] = signal
-    # data.to_netcdf("uploaded-dataset.nc", engine="h5netcdf", invalid_netcdf=True)
+    # data.to_netcdf("data/processed-dataset.nc", engine="h5netcdf", invalid_netcdf=True)
     # Now make a plot of it
     processed_plot = go.Figure()
     processed_plot.layout = {
@@ -198,7 +216,7 @@ def process_signal(json_data: dict, data=None):
         go.Scatter(
             x=data["Frequency"],
             y=signal,
-            name="Processed"
+            name="Processed",
         )
     )
     return processed_plot
